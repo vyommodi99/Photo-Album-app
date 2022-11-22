@@ -1,0 +1,1 @@
+{"version":"1.0.0","name":"creating-registration-and-login-form-in-nodejs-and-mongodb","dependencies":{"connect-mongo":{"version":"3.2.0"},"dotenv":{"version":"8.6.0"},"ejs":{"version":"3.1.8"},"express-session":{"version":"1.17.3"},"express":{"version":"4.18.2"},"fs":{"version":"0.0.1-security"},"mongoose":{"version":"5.13.15"},"path":{"version":"0.12.7"}}}

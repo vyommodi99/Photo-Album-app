@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO</title>
+    <link rel="stylesheet" href="./css/all.css">
+    <link rel="stylesheet" href="./css/bootstrap.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="./css/main.css">
+    <style>
+        .hero{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .hero-inner img{
+            width: 80%;
+        }
+        .label{
+            color: black;
+            display: none;
+        }
+        .hover-class:hover .label{
+            display: block;
+        }
+        .form-edit-popup,.delete-popup{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 50%;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: translate(-50%, -50%);
+            /* gap: 10px; */
+            border-radius: 15px;
+        }
+        .upload-inner{
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .upload-inner input,.upload-inner textarea{
+            border: none;
+            border-bottom: 1px solid black;
+            outline: none;
+        }
+    </style> 
+</head>
+<body>
+    <form action="/api/photo" method="POST" enctype="multipart/form-data" style="display: flex;
+    flex-direction: column;
+    align-items: center;">
+    <div style="display: flex;">
+        <div class="upload-inner">
+            <input type="text" id="name" placeholder="Label"
+                   value="" name="name" required>
+        </div>
+        <div class="upload-inner">
+            <label for="desc">Image Description</label>
+            <textarea id="desc" name="desc" value="" rows="2"
+                      placeholder="Description" required>
+            </textarea>
+        </div>
+    </div>
+    <div>
+        <div>
+            <label for="file">Upload Image</label>
+            <input type="file" name="file" id="file" class="btn btn-success">
+        </div>
+        <input type="submit" value="Add">
+    </div>
+    </form>
+    <h1>Uploaded Images</h1>
+    <input type="text" class="search" placeholder="search..." />
+    <div class="hero">
+        <% items.forEach(function(image) { %>
+        <div class="hero-inner">
+            <div>
+                <div class="hover-class">
+                <img src="data:image/<%=image.img.contentType%>;base64,
+                     <%=image.img.data.toString('base64')%>">
+                    <div class="label">
+                        <h5><%= image.name %></h5>
+                        <!-- <form action="/imagedelete" method="POST"> -->
+                            <input type="text" name="id" value="<%= image.id %>" hidden/>
+                            <button class="btn btn-danger btn-delete-outer" id="<%= image.id %>">Delete</button>
+                        <!-- </form> -->
+                    </div>
+                    
+                </div>
+                <div>
+                    <button class="btn btn-success edit-outer" id="<%= image.id %>">Edit</button>
+                </div>
+                <p><%= image.desc %></p>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+    <div class="form-edit-popup" hidden>
+        <form action="/api/photoedit" method="POST" enctype="multipart/form-data" style="    display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;">
+            <input type="file" name="file" id="file" class="btn btn-success">
+            <input type="text" name="id" value="" class="id-val" hidden />
+            <button class="btn btn-success btn-edit" id="">Edit</button>
+            <button type="button" class="btn btn-success btn-cancel">Cancel</button>
+        </form>
+    </div>
+    <div class="delete-popup" hidden>
+        <form action="/imagedelete" method="POST" style="    display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;">
+            <p>If Password is incorrect. Image will not be deleted and redierected to the same page.</p>
+            <input type="text" name="id" value="" class="id-val-del" hidden />
+            <input type="text" name="password" value="" class="id-pass" placeholder="Enter Password"/>
+            <button class="btn btn-success btn-delete" id="">Delete</button>
+            <button type="button" class="btn btn-success btn-cancel-delete">Cancel</button>
+        </form>
+    </div>
+    </div>
+   
+</body>
+<script>
+    const heroInner = document.querySelectorAll('.hero-inner')
+    
+    const btnCancel = document.querySelector('.btn-cancel')
+    const btnCancelDel = document.querySelector('.btn-cancel-delete')
+    const btnEdit = document.querySelector('.btn-edit')
+    const idVal = document.querySelector('.id-val')
+    const idValDel = document.querySelector('.id-val-del')
+    const formEditPopup = document.querySelector('.form-edit-popup')
+    const formDelPopup = document.querySelector('.delete-popup')
+    btnCancel.addEventListener('click', () => {
+        formEditPopup.setAttribute('hidden','true');
+    })
+    btnCancelDel.addEventListener('click', () => {
+        formDelPopup.setAttribute('hidden','true');
+    })
+    const editOuter = document.querySelectorAll('.edit-outer')
+    editOuter.forEach((eo) => {
+        eo.addEventListener('click', () => {
+            idVal.value = eo.id
+            formEditPopup.removeAttribute('hidden');
+
+        })
+    })
+    const deleteButtons = document.querySelectorAll('.btn-delete-outer')
+    deleteButtons.forEach((eo) => {
+        eo.addEventListener('click', () => {
+            idValDel.value = eo.id
+            formDelPopup.removeAttribute('hidden');
+
+        })
+    })
+    const label = document.querySelector('.search');
+    label.addEventListener('input', () => {
+        heroInner.forEach((h)=>{
+            
+            if(h.children[0].children[0].children[1].children[0].textContent.includes(label.value)){
+                h.removeAttribute('hidden')
+            }else{
+                h.setAttribute('hidden','true')
+            }
+            if(label.value==""){
+                h.removeAttribute('hidden')
+
+            }
+            console.log(h.children[0].children[0].children[1].children[0].textContent)
+        })
+    })
+
+</script>
+</html>
